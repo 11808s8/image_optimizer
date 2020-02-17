@@ -82,21 +82,23 @@ def image():
     else:
         new_name = image
 
-    if not os.path.isfile(os.path.join(CURRENT_DIRECTORY, 'uploads', 'imagens', new_name)):
-        img = Image.open(os.path.join(CURRENT_DIRECTORY, 'uploads', 'imagens', image))
-        img_resize = resize_image(img, width=width, height=height)
-        img_resize.save(os.path.join(CURRENT_DIRECTORY, 'uploads', 'imagens', new_name), optimized=True) 
+    # if not os.path.isfile(os.path.join(CURRENT_DIRECTORY, 'uploads', 'imagens', new_name)):
+    #     img = Image.open(os.path.join(CURRENT_DIRECTORY, 'uploads', 'imagens', image))
+    #     img_resize = resize_image(img, width=width, height=height)
+    #     img_resize.save(os.path.join(CURRENT_DIRECTORY, 'uploads', 'imagens', new_name), optimized=True) 
     
-    if marca:
-        new_image = Image.open(os.path.join(CURRENT_DIRECTORY, 'uploads', 'imagens', new_name))
-        marca_image = Image.open(os.path.join(CURRENT_DIRECTORY, 'uploads', 'marcas', marca))
-        width_of_marca = int(new_image.width*(25/100))
-        marca_new_image = resize_image(marca_image, width=width_of_marca)
-        new_image = trans_paste(marca_new_image, new_image, 0.5, (100,100))
-        new_image = new_image.convert("RGB")
-        new_image.save(os.path.join(CURRENT_DIRECTORY, 'uploads', 'imagens', new_name), optimized=True) 
-
-    return send_file(os.path.join(CURRENT_DIRECTORY, 'uploads', 'imagens', new_name), mimetype='image/jpeg')
+    # if marca:
+    #     new_image = Image.open(os.path.join(CURRENT_DIRECTORY, 'uploads', 'imagens', new_name))
+    #     marca_image = Image.open(os.path.join(CURRENT_DIRECTORY, 'uploads', 'marcas', marca))
+    #     width_of_marca = int(new_image.width*(25/100))
+    #     marca_new_image = resize_image(marca_image, width=width_of_marca)
+    #     new_image = trans_paste(marca_new_image, new_image, 0.5, (100,100))
+    #     new_image = new_image.convert("RGB")
+    #     new_image.save(os.path.join(CURRENT_DIRECTORY, 'uploads', 'imagens', new_name), optimized=True) 
+    
+    crop_on_heights(new_name, [337,500,900], 145)
+    # new_name = 'tt{}'.format(new_name)
+    # return send_file(os.path.join(CURRENT_DIRECTORY, 'uploads', 'imagens', new_name), mimetype='image/jpeg')
 
 def __new_image_name_factory(name,file_extension,width,height):
     if width and height:
@@ -107,6 +109,50 @@ def __new_image_name_factory(name,file_extension,width,height):
         new_name = "{}_h{}.{}".format(name,height,file_extension)
     return new_name
     
+
+def crop_on_heights(image_name, heights, maximum_crop_height):
+    index = 0
+    
+    image = Image.open(os.path.join(CURRENT_DIRECTORY, 'uploads', 'imagens', image_name)).convert('RGB')
+    
+    original_width, original_height = image.size
+    
+    where_height_is_cropping = 0
+
+    heights.append(original_height)
+
+    final_height = False
+
+    cutting_heights = []
+
+    #@TODO: FINISH THIS BAD BOY
+    # while(not final_height):
+    for height in heights:
+        
+        # if(heights)
+        where_height_is_cropping += maximum_crop_height
+        if(where_height_is_cropping >= height):
+            cutting_heights.append(height)
+            continue
+
+        while(where_height_is_cropping < height):
+
+            cutting_heights.append(where_height_is_cropping)
+            where_height_is_cropping+=maximum_crop_height
+        
+        # if
+        where_height_is_cropping = height
+                
+
+    print(sum(cutting_heights))
+    print(cutting_heights)
+    for height in cutting_heights:
+        
+        im = image.crop((0, where_height_is_cropping, original_width, height))
+        where_height_is_cropping = height
+        image_name = 'index_{}.jpg'.format(index)
+        index += 1
+        im.save(os.path.join(CURRENT_DIRECTORY, 'uploads', 'imagens', image_name ), "JPEG", optimized=True)
 
 if __name__ == '__main__':
     app.run(debug=True)
